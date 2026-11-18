@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="ikon-192.png">
+<link rel="apple-touch-icon" href="ikon-180.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Günlük İspanyolca Konuşma</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#1d6f6a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="İspanyolca">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="yazitipi/yazitipi.css">
+<style>
+/* Düzen: üstte sabit başlık, altında kategori ızgarası / cümle listesi (tek sütun akış) */
+:root{
+  --bg:#f3f5f2; --kart:#ffffff; --metin:#1c2b2a; --soluk:#5f6f6c; --cizgi:#dde4e1;
+  --ana:#1d6f6a; --ana-metin:#ffffff; --ana-acik:#d9eeeb; --vurgu:#9a4522; --okunus:#8a4b14; --yildiz:#a87600;
+  --yazi:"Lexend",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --hedef-yazi:var(--yazi); --hedef-olcek:1; --yon:ltr;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#121817; --kart:#1b2321; --metin:#e6ecea; --soluk:#9aaba7; --cizgi:#2b3633;
+    --ana:#4fb3aa; --ana-metin:#0d1a18; --ana-acik:#1f3533; --vurgu:#e58a5f; --okunus:#e0a868; --yildiz:#f2c14e; color-scheme:dark }
+}
+:root[data-theme="dark"]{ --bg:#121817; --kart:#1b2321; --metin:#e6ecea; --soluk:#9aaba7; --cizgi:#2b3633;
+  --ana:#4fb3aa; --ana-metin:#0d1a18; --ana-acik:#1f3533; --vurgu:#e58a5f; --okunus:#e0a868; --yildiz:#f2c14e; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--metin);font-family:var(--yazi);font-size:17px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--cizgi)}
+.sar{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ust{padding-block:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#geriBtn{font-weight:600;padding:8px 12px}
+.ust-araclar{display:contents}
+#menuBtn{display:none}
+#olcekBtn{font-weight:700;min-width:48px}
+html{--olcek:1}
+main,header .ust,.imza,#duyuru{zoom:var(--olcek)}
+.ust h1{font-size:20px;margin:0;flex:1;min-width:200px;cursor:pointer;font-weight:700}
+.ust h1 span{color:var(--ana)}
+input[type=search]{flex:1;min-width:160px;max-width:320px;padding:9px 12px;border:1px solid var(--cizgi);border-radius:10px;background:var(--kart);color:var(--metin);font:inherit;font-size:16px}
+button,select{font:inherit;color:var(--metin)}
+button{cursor:pointer;border:1px solid var(--cizgi);background:var(--kart);border-radius:10px;padding:8px 12px}
+button:hover{border-color:var(--ana)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ana);outline-offset:2px}
+select{background:var(--kart);border:1px solid var(--cizgi);border-radius:8px;padding:6px 8px;min-height:44px}
+button{min-height:44px}
+.btn-ana{background:var(--ana);color:var(--ana-metin);border-color:var(--ana)}
+main{padding-block:16px 40px}
+.giris{color:var(--soluk);margin:4px 0 16px;max-width:65ch}
+.izgara{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:12px}
+.kat{background:var(--kart);border:1px solid var(--cizgi);border-radius:14px;padding:16px;text-align:left;display:flex;flex-direction:column;gap:6px}
+.kat:hover{border-color:var(--ana)}
+.kat .ik{font-size:30px}
+.kat b{font-size:17px}
+.kat small{color:var(--soluk)}
+.geri{margin-bottom:12px}
+.baslik{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.baslik .ik{font-size:36px}
+.baslik h2{margin:0;font-size:24px;text-wrap:balance}
+.sekmeler{display:flex;gap:6px;margin:14px 0;flex-wrap:wrap}
+.sekmeler button.aktif{background:var(--ana);color:var(--ana-metin);border-color:var(--ana)}
+.arac{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.alt{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--vurgu);font-weight:700;margin:20px 0 8px}
+.satir{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:center}
+.satir.caliyor{border-color:var(--ana);box-shadow:0 0 0 2px var(--ana-acik)}
+.metinler{flex:1;min-width:0}
+.en{font-size:calc(20px * var(--hedef-olcek));font-weight:600;direction:var(--yon);font-family:var(--hedef-yazi);line-height:1.6}
+.ok{color:var(--okunus);font-style:italic;margin-top:2px}
+.tr{color:var(--soluk);margin-top:2px}
+.dugmeler{display:flex;gap:6px;flex-shrink:0}
+.dugmeler button{width:44px;height:44px;padding:0;font-size:19px;border-radius:50%}
+.dugmeler .fav.var{color:var(--yildiz);border-color:var(--yildiz)}
+.kelimeler{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:8px}
+.kelimeler .satir{margin:0}
+.kelimeler .en{font-size:calc(18px * var(--hedef-olcek))}
+.pratik{background:var(--kart);border:1px solid var(--cizgi);border-radius:16px;padding:26px 20px;text-align:center;max-width:620px;margin:0 auto}
+.pratik .sayac{color:var(--soluk);font-size:14px;font-variant-numeric:tabular-nums}
+.pratik .soru{font-size:24px;font-weight:600;margin:18px 0 8px}
+.pratik .ipucu{color:var(--soluk);margin-bottom:16px}
+.pratik .cevap{min-height:90px}
+.pratik .cevap .en{font-size:calc(24px * var(--hedef-olcek))}
+.pratik .arac{justify-content:center;margin-top:16px}
+.bos{color:var(--soluk);padding:20px;text-align:center}
+.kutu{background:var(--kart);border:1px solid var(--cizgi);border-radius:14px;padding:16px 18px;margin-top:20px;max-width:700px}
+.kutu h3{margin:0 0 8px;font-size:18px}
+.kutu table{border-collapse:collapse;width:100%}
+.kutu td{border-bottom:1px solid var(--cizgi);padding:6px 4px;vertical-align:top}
+.hiz{display:flex;align-items:center;gap:6px;color:var(--soluk);font-size:14px}
+.yukleniyor{color:var(--soluk);font-size:14px}
+.gunun{background:var(--ana-acik);border:1px solid var(--cizgi);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+.gunun .etiket{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--vurgu);font-weight:700}
+.wa{display:inline-flex;align-items:center;gap:8px;background:#1a7a43;color:#ffffff;border-radius:12px;padding:12px 18px;font-weight:600;text-decoration:none;font-size:18px}
+.wa:hover{filter:brightness(1.08)}
+.wa-mini{width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#1a7a43;color:#ffffff;text-decoration:none;font-size:19px}
+.baglanti{font-family:ui-monospace,Menlo,monospace;font-size:14px;background:var(--bg);border:1px solid var(--cizgi);border-radius:8px;padding:8px 10px;word-break:break-all;user-select:all;margin:10px 0}
+.adimlar{margin:6px 0 0;padding-left:22px}
+.adimlar li{margin-bottom:6px}
+.kutu + .kutu{margin-top:14px}
+.ilerleme{height:6px;background:var(--cizgi);border-radius:3px;overflow:hidden;margin-top:4px}
+.ilerleme i{display:block;height:100%;background:var(--ana)}
+.diyalog{display:flex;flex-direction:column;gap:10px;max-width:720px}
+.balon{max-width:85%;border:1px solid var(--cizgi);border-radius:16px;padding:10px 14px;background:var(--kart);display:flex;gap:10px;align-items:flex-start}
+.balon.B{align-self:flex-end;background:var(--ana-acik)}
+.balon .kim{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--vurgu)}
+.balon .en{font-size:calc(18px * var(--hedef-olcek))}
+.en[dir="rtl"],.kalip-metin[dir="rtl"]{line-height:1.95}
+.balon.caliyor{border-color:var(--ana);box-shadow:0 0 0 2px var(--ana-acik)}
+.balon.sirasende{border:2px dashed var(--vurgu)}
+.balon.sirasende .en,.balon.sirasende .ok{visibility:hidden}
+.balon button{width:44px;height:44px;padding:0;border-radius:50%;flex-shrink:0}
+.sirasende-not{color:var(--vurgu);font-weight:600;font-size:14px}
+.mikrofon{margin-top:14px;min-height:24px}
+.mikrofon .sonuc{margin-top:8px;font-size:15px}
+.mikrofon .sonuc b{color:var(--ana)}
+.kelime-yanlis{color:var(--vurgu);text-decoration:underline}
+.notlar ul{margin:0;padding-left:20px;padding-right:0}
+.notlar li{margin-bottom:6px}
+.kalip{margin-top:18px}
+.kalip-bas{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin-bottom:4px}
+.kalip-metin{font-size:calc(19px * var(--hedef-olcek));font-weight:700;color:var(--ana);direction:var(--yon);font-family:var(--hedef-yazi)}
+.kalip-aciklama{color:var(--soluk);margin:2px 0 8px;max-width:65ch}
+.grup-baslik{font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--vurgu);font-weight:700;margin:22px 0 10px}
+.duyuru{margin-top:14px;border-color:var(--ana);background:var(--ana-acik)}
+.ist-izgara{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,140px),1fr));gap:10px;margin-top:12px}
+.ist-kart{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.ist-kart b{font-size:24px;color:var(--ana);font-variant-numeric:tabular-nums}
+.ist-kart small{color:var(--soluk)}
+.ist-grafik{display:flex;align-items:flex-end;gap:8px;height:150px;background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;padding:12px 12px 8px}
+.ist-sutun{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0}
+.ist-sutun i{display:block;width:70%;min-height:2px;background:var(--ana);border-radius:4px 4px 0 0}
+.ist-sutun small,.ist-deger{font-size:12px;color:var(--soluk);font-variant-numeric:tabular-nums}
+.ist-satir{background:var(--kart);border:1px solid var(--cizgi);border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:space-between}
+.ist-satir .ilerleme{flex-basis:100%}
+.ist-rapor{white-space:pre-wrap;font-family:inherit;background:var(--bg);border:1px solid var(--cizgi);border-radius:8px;padding:10px 12px;margin:0 0 12px}
+.seviye{display:inline-block;font-size:12px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--ana-acik);color:var(--ana);vertical-align:middle;letter-spacing:.03em}
+.hedef{margin:8px 0 0;color:var(--soluk);max-width:65ch}
+.tekrar-kart{display:block;width:100%;text-align:left;margin:0 0 14px;padding:14px 16px;border:2px solid var(--ana);background:var(--ana-acik);border-radius:14px;font-size:17px}
+.kipler{justify-content:center}
+.kipler button.aktif{background:var(--ana);color:var(--ana-metin);border-color:var(--ana)}
+.secenekler{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.secenek{text-align:left;padding:12px 14px;font-size:17px}
+.secenek.dogru{border:2px solid #1a7a43;background:#e3f4e9;color:#14532d}
+.secenek.yanlis{border:2px solid var(--vurgu);text-decoration:line-through}
+.ipucu-metin{opacity:.85;letter-spacing:.04em}
+.bildim-arac{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+@media (max-width:560px){
+  .en{font-size:calc(18px * var(--hedef-olcek))}
+  .satir{align-items:flex-start}
+  .dugmeler{flex-direction:column}
+  .ust h1{font-size:18px;min-width:0}
+  #menuBtn{display:inline-block}
+  .ust-araclar{display:none;flex-basis:100%;flex-wrap:wrap;gap:8px}
+  .ust-araclar.acik{display:flex}
+  .ust-araclar input[type=search]{flex-basis:100%;max-width:none}
+}
+@media (prefers-reduced-motion: reduce){ *{scroll-behavior:auto!important} }
+/* Hazırlayanın imzası: kanat; Ş ve O kanatların içinde, zemin renginde (sayfa sonunda, küçük ve sessiz) */
+.imza{display:flex;justify-content:center;padding:28px 0 calc(24px + env(safe-area-inset-bottom,0px));opacity:.9}
+.imza svg{width:76px;height:auto;color:var(--ana)}
+</style>
+
+</head>
+<body>
+<header>
+  <div class="sar ust">
+    <button id="geriBtn" type="button" aria-label="Geri" hidden>← Geri</button>
+    <h1 id="logo" role="link" tabindex="0">🇪🇸 Günlük <span>İspanyolca</span> Konuşma</h1>
+    <button id="olcekBtn" type="button" aria-label="Yazı boyutu" title="Yazı boyutu">Aa</button>
+    <button id="menuBtn" type="button" aria-expanded="false" aria-controls="ustAraclar">☰ Menü</button>
+    <div class="ust-araclar" id="ustAraclar">
+    <input type="search" id="ara" placeholder="Cümle ara (İspanyolca ya da Türkçe)…" aria-label="Cümle ara">
+    <button id="favBtn">★ Favorilerim</button>
+    <button id="ilerlemeBtn">📊 İlerlemem</button>
+    <button id="rehberBtn">Okunuş rehberi</button>
+    <button id="paylasBtn" class="btn-ana">📤 Paylaş</button>
+    </div>
+  </div>
+</header>
+<main class="sar" id="icerik"></main>
+<footer class="imza"><svg viewBox="0 18 96 58" role="img" aria-label="ŞO"><path fill="currentColor" d="M6 50 C16 28 34 22 48 44 C62 22 80 28 90 50 C76 42 62 46 48 60 C34 46 20 42 6 50 Z"/><path fill="currentColor" opacity=".55" d="M14 56 C24 50 36 52 48 64 C60 52 72 50 82 56 C70 56 58 62 48 72 C38 62 26 56 14 56 Z"/><g fill="var(--bg)" font-family="Georgia,serif" font-size="8.5" text-anchor="middle" opacity=".9"><text x="31" y="44">Ş</text><text x="65" y="44">O</text></g></svg></footer>
+
+<script src="veri.js"></script>
+<script>
+const DIL = {"ad": "İspanyolca", "kod": "es-ES", "a": "Ali", "b": "Lucía", "site": "https://dilprogramlari.github.io/gunluk-ispanyolca/", "waMetni": "Günlük İspanyolca Konuşma: durum durum İspanyolca cümleler, diyaloglar ve dil kalıpları; Türkçe okunuşu, anlamı ve sesiyle. Ücretsiz, internetsiz de çalışır:", "tarih": "2026-11-18", "yon": "ltr", "sesOnbellek": "ispanyolca-ses", "onek": "ispanyolca", "yenilikler": ["🔁 Aralıklı tekrar: ana sayfada 'Bugün tekrar zamanı gelen cümleler' düğmesi; bildikleriniz daha uzun aralıkla geri gelir.", "🎧 Pratik'te yeni alıştırmalar: Dinle ve seç, Kelime testi; söylerken 💡 ipucu alabilirsiniz.", "🆕 Yeni konular: Konuşma Stratejileri ve Kendimi ve Ailemi Anlatıyorum. Her konuda seviye (A1/A2) ve hedef var.", "Aa düğmesiyle yazıyı büyütebilirsiniz; telefonda menü sadeleşti.", "✔️ Uzman incelemesiyle cümle ve okunuşlar düzeltildi.", "⚡ Güncellemelerde artık yalnızca değişen sesler iner; internetsiz kurulum kaldığı yerden devam eder."]};
+const V = window.VERI || [];
+window.SES = window.SES || {};
+const $ = s => document.querySelector(s);
+// Kayıtlar her programın kendi adıyla tutulur: aynı adreste (ör. GitHub Pages) birden çok program olsa da karışmaz.
+const ONEK = (DIL.onek || 'dil') + ':';
+const kaydet = (k,v)=>{try{localStorage.setItem(ONEK+k,JSON.stringify(v))}catch(e){}};
+const oku = (k,d)=>{try{let r=localStorage.getItem(ONEK+k);
+  // eski (öneksiz) kaydı bir kez taşı — yalnızca programın tek başına durduğu adreslerde
+  if(r===null && !/github\.io$/.test(location.hostname)){ r=localStorage.getItem(k); if(r!==null) localStorage.setItem(ONEK+k,r); }
+  const x=JSON.parse(r);return x==null?d:x}catch(e){return d}};
+let favoriler = new Set(oku('favoriler',[]));
+let hiz = oku('hiz',1);
+const ses = new Audio();
+let siraliOynat = null;
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// Sesler her kategori için ayrı bir dosyada (ses/<kategori>.js) durur; gerektiğinde yüklenir.
+const sesYukleme = {};
+const sesDosya = ad => 'ses/' + ((window.SESDOSYA||{})[ad] || (ad+'.js'));
+const yukluPaketler = [];  // hafızada en fazla 6 paket tutulur
+function sesHazirla(katId){
+  if(window.SES[katId]) return Promise.resolve();
+  if(!sesYukleme[katId]) sesYukleme[katId] = new Promise(r=>{
+    const s=document.createElement('script'); s.src=sesDosya(katId);
+    s.onload=()=>{ yukluPaketler.push(katId);
+      while(yukluPaketler.length>6){ const eski=yukluPaketler.shift(); delete window.SES[eski]; delete sesYukleme[eski]; }
+      r(); };
+    s.onerror=()=>{delete sesYukleme[katId]; r();}; document.head.appendChild(s);
+  });
+  return sesYukleme[katId];
+}
+
+function cal(o, yavas){ durdurSira(); return calTek(o, yavas); }
+async function calTek(o, yavas){
+  const el = document.querySelector(`[data-ses="${o.ses}"]`);
+  document.querySelectorAll('.caliyor').forEach(e=>e.classList.remove('caliyor'));
+  if(el) el.classList.add('caliyor');
+  // seçilen ses: kadın (varsayılan) ya da erkek; diyalog satırlarında ses rolden gelir
+  const erkek = sesTur==='erkek' && o.sesE;
+  const paketAd = erkek ? o.kat.id+'-e' : o.kat.id;
+  await sesHazirla(paketAd);
+  let veri = (window.SES[paketAd]||{})[erkek ? o.sesE : o.ses];
+  if(!veri && erkek){ await sesHazirla(o.kat.id); veri = (window.SES[o.kat.id]||{})[o.ses]; }
+  await new Promise(bitti=>{
+    const son = ()=>{ if(el) el.classList.remove('caliyor'); bitti(); };
+    if(!veri) return konus(o.en, yavas).then(son);
+    ses.onended = ()=>{ istEkle('sure', null, (ses.duration||0)/(ses.playbackRate||1)); son(); }; ses.onerror = ()=>konus(o.en, yavas).then(son);
+    istEkle('dinle', o.kat.id); if(!IST.d) IST.d={}; IST.d[o.ses]=1;
+    ses.src = 'data:audio/mpeg;base64,' + veri;
+    ses.preservesPitch = true;
+    ses.playbackRate = yavas ? 0.7 : hiz;
+    const p = ses.play(); if(p) p.catch(e=>{ if(e && e.name==='AbortError') return son(); konus(o.en, yavas).then(son); });
+  });
+}
+// Ses yüklenemezse cihazın kendi sesi (hedef dilde) kullanılır
+function konus(metin, yavas){
+  return new Promise(r=>{
+    if(!('speechSynthesis' in window)) return r();
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(metin); u.lang=DIL.kod; u.rate = yavas?0.7:hiz;
+    u.onend=r; u.onerror=r; speechSynthesis.speak(u);
+  });
+}
+function durdurSira(){ if(siraliOynat){siraliOynat.dur=true; siraliOynat=null;} ses.pause(); }
+async function hepsiniCal(btn){
+  const liste = window.aktifListe || [];
+  if(siraliOynat){ durdurSira(); btn.textContent='▶ Hepsini sırayla dinle'; return; }
+  const durum = siraliOynat = {dur:false}; btn.textContent='■ Durdur';
+  for(const o of liste){
+    if(durum.dur) break;
+    const el = document.querySelector(`[data-ses="${o.ses}"]`);
+    if(el) el.scrollIntoView({block:'center',behavior:'smooth'});
+    await calTek(o,false);
+    if(durum.dur) break;
+    await new Promise(r=>setTimeout(r,1600)); // tekrar etmeniz için kısa ara
+  }
+  if(siraliOynat===durum) siraliOynat=null;
+  btn.textContent='▶ Hepsini sırayla dinle';
+}
+function favDegis(id, btn){
+  favoriler.has(id)?favoriler.delete(id):favoriler.add(id);
+  kaydet('favoriler',[...favoriler]); btn.classList.toggle('var', favoriler.has(id)); btn.setAttribute('aria-pressed', favoriler.has(id));
+}
+
+const tumOgeler = {};
+V.forEach(k=>['cumleler','kelimeler'].forEach(l=>k[l].forEach(o=>{ if(o.ses){ o.kat=k; if(!tumOgeler[o.ses]) tumOgeler[o.ses]=o; } })));
+V.forEach(k=>{ if(k.ogren) (k.ogren.kaliplar||[]).forEach(kl=>kl.ornekler.forEach(o=>{ o.kat=k; if(!tumOgeler[o.ses]) tumOgeler[o.ses]=o; })); });
+const diyalogOgeleri = {};
+V.forEach(k=>{ if(k.diyalog) k.diyalog.satirlar.forEach((o,i)=>{ o.kat=k; o.no=i; diyalogOgeleri[k.id+'-'+i]=o; }); });
+
+// "Bildim" işaretleri (yalnızca bu cihazda saklanır)
+let bildim = new Set(oku('bildim',[]));
+function bildimDegis(id, deger){ deger?bildim.add(id):bildim.delete(id); kaydet('bildim',[...bildim]); }
+const katCumleleri = k=>k.cumleler.filter(o=>o.en);
+const katBilinen = k=>katCumleleri(k).filter(o=>bildim.has(o.ses)).length;
+
+function satir(o){
+  return `<div class="satir" data-ses="${o.ses}">
+    <div class="metinler"><div class="en" lang="${DIL.kod}" dir="${DIL.yon||'ltr'}">${esc(o.en)}</div><div class="ok">🗣 ${esc(o.ok)}</div><div class="tr">${esc(o.tr)}</div></div>
+    <div class="dugmeler">
+      <button title="Dinle" aria-label="Dinle" data-cal="${o.ses}">🔊</button>
+      <button title="Yavaş dinle" aria-label="Yavaş dinle" data-yavas="${o.ses}">🐢</button>
+      <button title="Favorilere ekle" aria-label="Favorilere ekle" class="fav ${favoriler.has(o.ses)?'var':''}" aria-pressed="${favoriler.has(o.ses)}" data-fav="${o.ses}">★</button>
+    </div></div>`;
+}
+
+const rehberHTML = `<div class="kutu"><h3>Okunuşları nasıl okumalıyım?</h3><p>İspanyolca neredeyse yazıldığı gibi okunur. Okunuşlar Türk alfabesiyle yazıldı; yazıldığı gibi okuyun, sonra sesini dinleyip taklit edin.</p><table><tr><td><b>j, ge, gi</b></td><td>Gırtlaktan, hırıltılı "h": <i>joven → hóben, gente → hente</i></td></tr><tr><td><b>ll, y</b></td><td>"y" gibi: <i>llamo → yamo</i></td></tr><tr><td><b>ñ</b></td><td>"ny": <i>España → espanya</i></td></tr><tr><td><b>z, ce, ci</b></td><td>İspanya'da dil ucu dişlerin arasında, peltek "s" (İng. think); okunuşta <b>s</b> yazdık: <i>gracias → grasyas</i></td></tr><tr><td><b>h</b></td><td>Hiç okunmaz: <i>hola → ola</i></td></tr><tr><td><b>qu, gu</b></td><td>"k" ve "g": <i>quiero → kyero, guitarra → gitara</i></td></tr><tr><td><b>r / rr</b></td><td>Tek r yumuşak, rr ve baştaki r titrek: <i>perro → pero</i></td></tr><tr><td><b>w</b></td><td>Okunuşta kısa "u" sesi: <i>bueno → bwéno, agua → ágwa</i></td></tr><tr><td><b>y + ünlü</b></td><td>Kısa "i" sesi: <i>siete → syéte, quiero → kyéro</i></td></tr><tr><td><b>´</b></td><td>Vurgulu heceyi gösterir: <i>café → kafé</i>. Okunuşta da vurgulu hece işaretli.</td></tr><tr><td><b>¿ ¡</b></td><td>Soru ve ünlem cümleleri başta ters işaretle başlar.</td></tr></table></div>`;
+
+// Uygulama kendi sitesinde (pages.dev) açıldıysa paylaşım adresi o sitedir
+// paylaşım her zaman programın asıl adresini gösterir (pages.dev Türkiye'de engelli olduğu için GitHub Pages)
+const PAYLASIM = DIL.site || location.href.split('#')[0];
+const WA_METNI = DIL.waMetni + ' ' + PAYLASIM;
+
+function gununCumlesi(){
+  const hepsi = V.flatMap(k=>k.cumleler.filter(o=>o.en));
+  const d = new Date(); const gun = Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
+  return hepsi[(gun*7919) % hepsi.length];
+}
+
+function paylasSayfa(){
+  $('#icerik').innerHTML = `<button class="geri" data-git="">← Kategoriler</button>
+    <div class="baslik"><span class="ik">📤</span><h2>Paylaş ve telefona yükle</h2></div>
+    <div class="kutu"><h3>Arkadaşınıza gönderin</h3>
+      <p>Aşağıdaki düğmeye basın, WhatsApp açılır. Kişiyi seçip gönderin.</p>
+      <a class="wa" href="https://wa.me/?text=${encodeURIComponent(WA_METNI)}" target="_blank" rel="noopener">💬 WhatsApp'ta paylaş</a>
+      ${navigator.share?`<p style="margin:10px 0 0"><button id="digerPaylas">📱 Diğer uygulamalarla paylaş</button></p>`:''}
+      <p style="margin-bottom:0">Ya da bağlantıyı kopyalayıp istediğiniz yere yapıştırın:</p>
+      <div class="baglanti" id="baglanti">${PAYLASIM}</div>
+      <button id="kopyala">📋 Bağlantıyı kopyala</button> <span id="kopyaDurum" class="tr" aria-live="polite"></span>
+    </div>
+    <div class="kutu"><h3>Telefonun ana ekranına ekleyin</h3>
+      ${yuklu()?`<p><b>✅ Program bu telefonda uygulama olarak yüklü.</b></p>`:`
+      ${kurulumOlayi?`<p><button class="btn-ana" id="yukleBtn">📲 Uygulamayı yükle</button></p>`:''}
+      <p><b>WhatsApp'tan açtıysanız:</b> önce sağ üstteki ⋮ ya da paylaş simgesine dokunup <b>"Tarayıcıda aç"</b> (iPhone'da "Safari'de aç") deyin; ana ekrana ekleme oradan yapılır. İlk açılışı mümkünse Wi-Fi'de yapın.</p>
+      <b>iPhone (Safari)</b>
+      <ol class="adimlar"><li>Bağlantıyı Safari'de açın.</li><li>Alttaki paylaş simgesine (yukarı ok olan kare) dokunun.</li><li><b>Ana Ekrana Ekle</b>'yi seçin, sonra <b>Ekle</b>'ye dokunun.</li></ol>
+      <b>Android (Chrome)</b>
+      <ol class="adimlar"><li>Bağlantıyı Chrome'da açın.</li><li>Sağ üstteki üç noktaya (⋮) dokunun.</li><li><b>Ana ekrana ekle</b>'yi seçin, sonra <b>Ekle</b>'ye dokunun.</li></ol>
+      <p style="margin-bottom:0">Program ana ekranda uygulama simgesi olarak durur. İlk açılışta tüm sesler telefona kaydedilir; sonra <b>internet olmadan da</b> çalışır.</p>`}
+      <p class="tr" id="cevrimdisiDurum" aria-live="polite" style="margin-bottom:0">${cevrimdisiMetin()}</p>
+      <p style="margin:12px 0 0"><span class="tr">Sürüm: ${tarihYaz(DIL.tarih)}</span><br>
+      <button id="guncelBtn" style="margin-top:6px">🔄 Güncellemeleri denetle</button> <span id="guncelDurum" class="tr" aria-live="polite"></span></p>
+    </div>`;
+  document.getElementById('guncelBtn').addEventListener('click', guncelDenetle);
+  const yb=document.getElementById('yukleBtn'); if(yb) yb.addEventListener('click', async ()=>{ kurulumOlayi.prompt(); try{ await kurulumOlayi.userChoice; }catch(e){} kurulumOlayi=null; paylasSayfa(); });
+  const dp=document.getElementById('digerPaylas');
+  if(dp) dp.addEventListener('click', ()=>{ navigator.share({title:document.title, text:WA_METNI}).catch(()=>{}); });
+  $('#kopyala').addEventListener('click', ()=>{
+    const bitti = m=>{$('#kopyaDurum').textContent=m;};
+    const sec = ()=>{ const r=document.createRange(); r.selectNodeContents($('#baglanti')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); bitti('Bağlantı seçildi; kopyalayın.'); };
+    try{ navigator.clipboard.writeText(PAYLASIM).then(()=>bitti('Kopyalandı ✓'), sec); }catch(e){ sec(); }
+  });
+}
+
+function gruplar(){
+  const sira=[]; const m={};
+  V.forEach(k=>{ const g=k.grup||''; if(!(g in m)){ m[g]=[]; sira.push(g);} m[g].push(k); });
+  return sira.map(g=>[g,m[g]]);
+}
+function anaSayfa(){
+  const cs = V.reduce((t,k)=>t+k.cumleler.filter(o=>o.en).length,0);
+  const ks = V.reduce((t,k)=>t+k.kelimeler.length,0);
+  const g = gununCumlesi();
+  $('#icerik').innerHTML = `
+    <p class="giris">Bir durum seçin; o durumda söyleyeceğiniz cümleleri okuyun, dinleyin ve yüksek sesle tekrar edin.
+    <br>${V.length} kategori · ${cs} cümle · ${ks} kelime</p>
+    <div class="arac">${sesSecici()} <span id="sesDurum" class="tr" aria-live="polite"></span></div>
+    ${vadesiGelenler().length?`<button class="tekrar-kart" data-git="tekrar">🔁 Bugün tekrar zamanı gelen <b>${vadesiGelenler().length}</b> cümle var. Şimdi tekrar et →</button>`:''}
+    ${g?`<div class="gunun" data-ses="${g.ses}"><div class="metinler"><div class="etiket">Günün cümlesi · ${g.kat.ikon} ${esc(g.kat.ad)}</div>
+      <div class="en" lang="${DIL.kod}" dir="${DIL.yon||'ltr'}">${esc(g.en)}</div><div class="ok">🗣 ${esc(g.ok)}</div><div class="tr">${esc(g.tr)}</div></div>
+      <div class="dugmeler"><button title="Dinle" aria-label="Dinle" data-cal="${g.ses}">🔊</button><button title="Yavaş dinle" aria-label="Yavaş dinle" data-yavas="${g.ses}">🐢</button><a class="wa-mini" title="WhatsApp'ta gönder" aria-label="WhatsApp'ta gönder" href="https://wa.me/?text=${encodeURIComponent(g.en+'\n🗣 '+g.ok+'\n'+g.tr+'\n\n'+PAYLASIM)}" target="_blank" rel="noopener">💬</a></div></div>`:''}
+    ${gruplar().map(([g,ks])=>`${g?`<div class="grup-baslik">${esc(g)}</div>`:''}<div class="izgara">${ks.map(k=>`
+      <button class="kat" data-git="${k.id}">
+        <span class="ik">${k.ikon}</span><b>${esc(k.ad)}${k.seviye?` <span class="seviye">${esc(k.seviye)}</span>`:''}</b>
+        <small>${esc(k.aciklama)}</small>
+        <small>${katCumleleri(k).length} cümle · ${k.kelimeler.length} kelime${k.diyalog?' · diyalog':''}</small>
+        ${katBilinen(k)?`<small>✓ ${katBilinen(k)}/${katCumleleri(k).length} öğrenildi</small><div class="ilerleme"><i style="width:${Math.round(100*katBilinen(k)/katCumleleri(k).length)}%"></i></div>`:''}
+      </button>`).join('')}</div>`).join('')}`;
+}
+
+let sesTur = oku('sesTur','kadin');
+function sesSecici(){
+  return `<label class="hiz" for="sesSec">Ses</label><select id="sesSec">
+    ${[['kadin','👩 Kadın sesi'],['erkek','👨 Erkek sesi']].map(([v,a])=>`<option value="${v}" ${v===sesTur?'selected':''}>${a}</option>`).join('')}
+  </select>`;
+}
+// Erkek sesi seçilince bütün erkek ses paketlerini arka planda indir (internetsiz kullanım için saklanır)
+// Ses paketlerini tek tek, tekrar deneyerek bu cihaza kaydeder; gerçek ilerlemeyi gösterir.
+let indirmeSurüyor = false, indirMetni = '';
+function indirDurumYaz(m){ indirMetni = m; const e=document.getElementById('sesDurum'); if(e) e.textContent=m; cevrimdisiGoster(); }
+async function sesleriIndir(erkek){
+  if(!('serviceWorker' in navigator) || !navigator.serviceWorker.controller || !('caches' in window)) return false;
+  const adlar = V.map(k=>erkek ? k.id+'-e' : k.id);
+  const c = await caches.open(DIL.sesOnbellek);
+  let hazir = 0; const eksik = [];
+  for(const ad of adlar){ if(await c.match(sesDosya(ad), {ignoreSearch:true})) hazir++; else eksik.push(ad); }
+  const etiket = erkek ? 'Erkek sesleri' : 'Sesler';
+  for(const ad of eksik){
+    indirDurumYaz('⏳ '+etiket+' bu cihaza kaydediliyor: '+hazir+'/'+adlar.length);
+    let tamam=false;
+    for(let deneme=0; deneme<3 && !tamam; deneme++){
+      try{ const y = await fetch(sesDosya(ad)); tamam = y.ok; }catch(e){ await new Promise(r=>setTimeout(r,1500*(deneme+1))); }
+    }
+    if(tamam) hazir++;
+  }
+  if(hazir===adlar.length){ indirDurumYaz('✅ '+etiket+' internetsiz kullanıma hazır.'); return true; }
+  indirDurumYaz('⚠️ '+etiket+' tam kaydedilemedi ('+hazir+'/'+adlar.length+'). İnternete bağlanınca kaldığı yerden devam eder.');
+  return false;
+}
+async function sesHazirlikSirasi(){
+  if(indirmeSurüyor) return; indirmeSurüyor = true;
+  try{
+    const kadin = await sesleriIndir(false);
+    cevrimdisiHazir = kadin ? true : false;
+    if(sesTur==='erkek') await sesleriIndir(true);
+  } finally { indirmeSurüyor = false; cevrimdisiGoster(); }
+}
+window.addEventListener('online', ()=>setTimeout(sesHazirlikSirasi, 1000));
+const erkekIndir = ()=>sesHazirlikSirasi();
+function hizSecici(){
+  return sesSecici() + `<label class="hiz" for="hizSec">Hız</label><select id="hizSec">
+    ${[[0.8,'Yavaş'],[1,'Normal'],[1.15,'Hızlı']].map(([v,a])=>`<option value="${v}" ${v==hiz?'selected':''}>${a}</option>`).join('')}
+  </select>`;
+}
+const dinleArac = ()=>`<div class="arac"><button class="btn-ana" data-hepsi>▶ Hepsini sırayla dinle</button>${hizSecici()}</div>`;
+
+function katSayfa(id, sekme){
+  const k = V.find(x=>x.id===id); if(!k) return anaSayfa();
+  sesHazirla(id); // sesi önceden indirmeye başla
+  let govde = '';
+  if(sekme==='cumleler'){
+    window.aktifListe = k.cumleler.filter(o=>o.en);
+    govde = dinleArac() + k.cumleler.map(o=>o.baslik?`<div class="alt">${esc(o.baslik)}</div>`:satir(o)).join('');
+  } else if(sekme==='kelimeler'){
+    window.aktifListe = k.kelimeler;
+    govde = dinleArac() + `<div class="kelimeler">${k.kelimeler.map(satir).join('')}</div>`;
+  } else if(sekme==='ogren' && k.ogren){
+    window.aktifListe = (k.ogren.kaliplar||[]).flatMap(kl=>kl.ornekler);
+    govde = ogrenHTML(k);
+  } else if(sekme==='diyalog' && k.diyalog){
+    govde = diyalogHTML(k);
+  } else govde = `<div id="pratik"></div>`;
+  $('#icerik').innerHTML = `
+    <button class="geri" data-git="">← Kategoriler</button>
+    <div class="baslik"><span class="ik">${k.ikon}</span><div><h2>${esc(k.ad)}${k.seviye?` <span class="seviye">${esc(k.seviye)}</span>`:''}</h2><div class="tr">${esc(k.aciklama)}</div></div></div>
+    ${k.hedef?`<p class="hedef">🎯 ${esc(k.hedef)}</p>`:''}
+    <div class="sekmeler" role="tablist">
+      ${[...(k.ogren?[['ogren','📘 Öğren','-ogren']]:[]),['cumleler','💬 Cümleler',''],['kelimeler','📖 Kelimeler','-kelimeler'],...(k.diyalog?[['diyalog','🗨️ Diyalog','-diyalog']]:[]),['pratik','🎯 Pratik yap','-pratik']].map(([s,a,ek])=>
+        `<button role="tab" aria-selected="${s===sekme}" class="${s===sekme?'aktif':''}" data-git="${id}${ek}">${a}</button>`).join('')}
+    </div>${govde}`;
+  if(sekme==='pratik') pratikBaslat(k.cumleler.filter(o=>o.en), k);
+}
+
+// ---------- İlerleme: yalnızca bu cihazda tutulur ----------
+const bugun = (d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+let IST = oku('ist', null) || {gun:{}, kat:{}, d:{}};
+function istEkle(alan, katId, miktar=1){
+  const g = IST.gun[bugun()] || (IST.gun[bugun()] = {dinle:0,sure:0,pratik:0,mik:0,mikPuan:0,diyalog:0});
+  g[alan] = (g[alan]||0) + miktar;
+  if(katId){ const k = IST.kat[katId] || (IST.kat[katId] = {dinle:0,pratik:0,diyalog:0,mik:0}); if(alan in k) k[alan] += miktar; }
+  kaydet('ist', IST);
+}
+function istOzet(){
+  const gunler = Object.keys(IST.gun).sort(); let t = {dinle:0,sure:0,pratik:0,mik:0,mikPuan:0,diyalog:0};
+  gunler.forEach(g=>Object.keys(t).forEach(a=>t[a]+=IST.gun[g][a]||0));
+  // art arda çalışılan gün (bugün ya da dün biten seri)
+  let seri=0, d=new Date(); if(!IST.gun[bugun(d)]) d.setDate(d.getDate()-1);
+  while(IST.gun[bugun(d)]){ seri++; d.setDate(d.getDate()-1); }
+  const toplamCumle = V.reduce((a,k)=>a+katCumleleri(k).length,0);
+  const ogrenilen = V.reduce((a,k)=>a+katBilinen(k),0);
+  return {...t, gunSayisi:gunler.length, seri, toplamCumle, ogrenilen, farkli:Object.keys(IST.d||{}).length,
+    dakika:Math.round(t.sure/60), ort: t.mik? Math.round(t.mikPuan/t.mik):0};
+}
+function raporMetni(){
+  const o = istOzet();
+  const enCok = Object.entries(IST.kat).sort((a,b)=>(b[1].dinle+b[1].pratik)-(a[1].dinle+a[1].pratik)).slice(0,3)
+    .map(([id])=>(V.find(k=>k.id===id)||{}).ad).filter(Boolean);
+  return `📊 ${document.title} — İlerleme raporum (${tarihYaz(bugun())})
+📅 Çalışılan gün: ${o.gunSayisi} (art arda ${o.seri} gün)
+🔊 Dinleme: ${o.dinle} kez, ${o.dakika} dakika
+✓ Öğrenilen cümle: ${o.ogrenilen} / ${o.toplamCumle}
+🎯 Pratik: ${o.pratik} · 🎤 Mikrofon: ${o.mik} deneme, ortalama %${o.ort}
+${enCok.length?'⭐ En çok çalışılan konular: '+enCok.join(', '):''}`.trim();
+}
+function ilerlemeSayfa(){
+  const o = istOzet();
+  const son7 = [...Array(7)].map((_,i)=>{ const d=new Date(); d.setDate(d.getDate()-6+i); const g=IST.gun[bugun(d)]||{};
+    return {ad:d.toLocaleDateString(document.documentElement.lang||'tr',{weekday:'short'}), dk:Math.round((g.sure||0)/60), n:g.dinle||0}; });
+  const enFazla = Math.max(1, ...son7.map(x=>x.dk));
+  const kart = (deger, ad)=>`<div class="ist-kart"><b>${deger}</b><small>${ad}</small></div>`;
+  $('#icerik').innerHTML = `<button class="geri" data-git="">← Kategoriler</button>
+    <div class="baslik"><span class="ik">📊</span><div><h2>İlerlemem</h2><div class="tr">Bu bilgiler yalnızca bu cihazda saklanır.</div></div></div>
+    ${o.gunSayisi? `
+    <div class="ist-izgara">
+      ${kart(o.gunSayisi,'<span>çalışılan gün</span>')}${kart(o.seri,'<span>gün art arda</span>')}
+      ${kart(o.dakika,'<span>dakika dinleme</span>')}${kart(o.dinle,'<span>kez dinleme</span>')}
+      ${kart(o.ogrenilen+' / '+o.toplamCumle,'<span>öğrenilen cümle</span>')}${kart(o.pratik,'<span>pratik</span>')}
+      ${kart(o.mik,'<span>mikrofon denemesi</span>')}${kart('%'+o.ort,'<span>ortalama doğruluk</span>')}
+    </div>
+    <div class="alt">Son 7 gün (dakika)</div>
+    <div class="ist-grafik">${son7.map(x=>`<div class="ist-sutun"><span class="ist-deger">${x.dk}</span><i style="height:${Math.round(100*x.dk/enFazla)}%"></i><small>${esc(x.ad)}</small></div>`).join('')}</div>
+    <div class="alt">Konulara göre</div>
+    ${V.filter(k=>IST.kat[k.id]||katBilinen(k)).map(k=>{ const s=IST.kat[k.id]||{dinle:0,pratik:0}; const yz=Math.round(100*katBilinen(k)/Math.max(1,katCumleleri(k).length));
+      return `<div class="ist-satir"><span>${k.ikon} ${esc(k.ad)}</span><span class="tr">✓ ${katBilinen(k)}/${katCumleleri(k).length} · 🔊 ${s.dinle} · 🎯 ${s.pratik}</span><div class="ilerleme"><i style="width:${yz}%"></i></div></div>`; }).join('')}
+    <div class="kutu"><h3>Öğretmeninize ya da ailenize gönderin</h3>
+      <pre class="ist-rapor">${esc(raporMetni())}</pre>
+      <a class="wa" href="https://wa.me/?text=${encodeURIComponent(raporMetni())}" target="_blank" rel="noopener">💬 Raporumu WhatsApp'ta gönder</a>
+      ${navigator.share?`<p style="margin:10px 0 0"><button id="raporPaylas">📱 Diğer uygulamalarla paylaş</button></p>`:''}
+    </div>
+    <p style="margin-top:18px"><button id="istSifirla">🗑 İlerlemeyi sıfırla</button> <span id="sifirlaOnay"></span></p>`
+    : `<p class="bos">Henüz kayıt yok. Bir konu açıp dinlemeye başlayın; ilerlemeniz burada görünecek.</p>`}`;
+  const rp=document.getElementById('raporPaylas'); if(rp) rp.addEventListener('click', ()=>navigator.share({title:document.title, text:raporMetni()}).catch(()=>{}));
+  const sf=document.getElementById('istSifirla'); if(sf) sf.addEventListener('click', ()=>{
+    document.getElementById('sifirlaOnay').innerHTML = `<span class="tr">Emin misiniz? Bütün ilerleme kayıtları silinir.</span> <button id="sifirlaEvet">Evet, sil</button> <button id="sifirlaVazgec">Vazgeç</button>`;
+    document.getElementById('sifirlaEvet').addEventListener('click', ()=>{ IST={gun:{},kat:{},d:{}}; kaydet('ist',IST); bildim=new Set(); kaydet('bildim',[]); ilerlemeSayfa(); });
+    document.getElementById('sifirlaVazgec').addEventListener('click', ()=>{ document.getElementById('sifirlaOnay').innerHTML=''; });
+  });
+}
+
+// ---------- Öğren: kalıplar ve dil notları ----------
+function ogrenHTML(k){
+  const o = k.ogren;
+  return `${o.giris?`<p class="giris">${o.giris}</p>`:''}
+    ${(o.notlar||[]).length?`<div class="kutu notlar"><h3>💡 Bilmeniz gerekenler</h3><ul>${o.notlar.map(n=>`<li>${n}</li>`).join('')}</ul></div>`:''}
+    ${(o.kaliplar||[]).length?`<div class="alt">Kalıplar: aynı yapı, farklı kelimeler</div>`+dinleArac():''}
+    ${(o.kaliplar||[]).map(kl=>`<div class="kalip">
+      <div class="kalip-bas"><span class="kalip-metin" lang="${DIL.kod}" dir="${DIL.yon||'ltr'}">${esc(kl.kalip)}</span><span class="tr">${esc(kl.anlam||'')}</span></div>
+      ${kl.aciklama?`<p class="kalip-aciklama">${kl.aciklama}</p>`:''}
+      ${kl.ornekler.map(satir).join('')}</div>`).join('')}`;
+}
+
+// ---------- Diyalog ----------
+let rol = oku('rol','');
+function diyalogHTML(k){
+  window.aktifDiyalog = k;
+  const ad = r => r==='A'?DIL.a:DIL.b;
+  return `<div class="arac">
+      <button class="btn-ana" data-diyalog-oynat>▶ Diyaloğu oynat</button>
+      <label class="hiz" for="rolSec">Rol yap</label>
+      <select id="rolSec">
+        <option value="" ${rol===''?'selected':''}>Sadece dinle</option>
+        <option value="A" ${rol==='A'?'selected':''}>Ben ${DIL.a} olayım</option>
+        <option value="B" ${rol==='B'?'selected':''}>Ben ${DIL.b} olayım</option>
+      </select>
+    </div>
+    <p class="giris">${esc(k.diyalog.baslik)}. ${rol?`Sıra size gelince Türkçesine bakıp <b>${ad(rol)}</b> rolündeki cümleyi ${DIL.ad} söyleyin; ardından doğrusunu duyacaksınız.`:'Önce dinleyin, sonra bir rol seçip konuşmaya katılın.'}</p>
+    <div class="diyalog">${k.diyalog.satirlar.map((o,i)=>`
+      <div class="balon ${o.rol}" data-ses="${o.ses}" data-satir="${i}">
+        <div class="metinler"><div class="kim">${ad(o.rol)}</div><div class="en" lang="${DIL.kod}" dir="${DIL.yon||'ltr'}">${esc(o.en)}</div><div class="ok">🗣 ${esc(o.ok)}</div><div class="tr">${esc(o.tr)}</div></div>
+        <button title="Dinle" aria-label="Dinle" data-dcal="${k.id}-${i}">🔊</button>
+      </div>`).join('')}</div>`;
+}
+async function diyalogOynat(btn){
+  if(siraliOynat){ durdurSira(); btn.textContent='▶ Diyaloğu oynat'; document.querySelectorAll('.sirasende').forEach(e=>e.classList.remove('sirasende')); return; }
+  const k = window.aktifDiyalog; const durum = siraliOynat = {dur:false}; btn.textContent='■ Durdur'; istEkle('diyalog', k.id);
+  for(const o of k.diyalog.satirlar){
+    if(durum.dur) break;
+    const el = document.querySelector(`[data-satir="${o.no}"]`);
+    if(el) el.scrollIntoView({block:'center',behavior:'smooth'});
+    if(rol && o.rol===rol && el){
+      el.classList.add('sirasende');
+      const not = document.createElement('div'); not.className='sirasende-not'; not.textContent='🎙 Sıra sizde, '+DIL.ad+' söyleyin…';
+      el.querySelector('.metinler').prepend(not);
+      await new Promise(r=>setTimeout(r, 2500 + o.en.length*90));
+      not.remove(); el.classList.remove('sirasende');
+      if(durum.dur) break;
+    }
+    await calTek(o,false);
+    if(durum.dur) break;
+    await new Promise(r=>setTimeout(r,700));
+  }
+  if(siraliOynat===durum) siraliOynat=null;
+  btn.textContent='▶ Diyaloğu oynat';
+}
+
+// ---------- Mikrofonla kontrol ----------
+// Arapça harekeleri, elif çeşitlerini ve büyük-küçük harfi eşitler
+function normal(s){ return String(s).toLocaleLowerCase(DIL.kod).replace(/[\u064B-\u065F\u0670\u0640]/g,'')
+  .replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[’`]/g,"'"); }
+const TanimaSinifi = window.SpeechRecognition || window.webkitSpeechRecognition;
+const sadele = s => normal(s).replace(/[^\p{L}\p{N}' ]/gu,' ').split(/\s+/).filter(Boolean);
+function karsilastir(hedef, duyulan){
+  const h = sadele(hedef), d = sadele(duyulan); const kalan=[...d]; let dogru=0;
+  const isaretli = h.map(w=>{ const i=kalan.indexOf(w); if(i>=0){kalan.splice(i,1);dogru++;return esc(w);} return `<span class="kelime-yanlis">${esc(w)}</span>`; });
+  return {oran: h.length?Math.round(100*dogru/h.length):0, isaretli: isaretli.join(' ')};
+}
+function dinleVeKontrolEt(o){
+  const yer = $('#mikSonuc'); if(!yer) return;
+  if(!TanimaSinifi){ yer.innerHTML='Bu tarayıcı konuşma tanımayı desteklemiyor. Android\'de Chrome, iPhone\'da Safari ile deneyin.'; return; }
+  durdurSira();
+  const t = new TanimaSinifi(); t.lang=DIL.kod; t.interimResults=false; t.maxAlternatives=3;
+  yer.innerHTML='🎙 Dinliyorum… Cümleyi '+DIL.ad+' söyleyin.';
+  t.onresult = e=>{
+    const secenekler=[...e.results[0]].map(a=>a.transcript);
+    let en=null; secenekler.forEach(s=>{ const r=karsilastir(o.en,s); if(!en||r.oran>en.oran) en={...r,s}; });
+    istEkle('mik', o.kat.id); istEkle('mikPuan', null, en.oran);
+    const yorum = en.oran>=90?'Harika! 🎉':en.oran>=70?'Çok iyi, biraz daha net söyleyin. 👍':'Bir daha deneyin; önce dinleyip taklit edin. 🔁';
+    yer.innerHTML = `<div class="sonuc"><b>${en.oran}%</b> doğru · ${yorum}<br><span class="tr">Duyduğum: “${esc(en.s)}”</span><br>${en.isaretli}</div>`;
+  };
+  t.onerror = e=>{ yer.innerHTML = e.error==='not-allowed'||e.error==='service-not-allowed'
+      ? 'Mikrofon izni verilmedi. Tarayıcı ayarlarından bu siteye mikrofon izni verin.'
+      : 'Sesinizi duyamadım. Biraz daha yüksek sesle tekrar deneyin.'; };
+  try{ t.start(); }catch(e){ yer.textContent='Mikrofon başlatılamadı.'; }
+}
+
+// ---------- Aralıklı tekrar (Leitner kutuları) ----------
+// "Bildim" denen cümle 1, 3, 7, 14, 30 gün sonra yeniden sorulur; "Tekrar çalışayım" denen ertesi gün gelir.
+const ARALIK = [1,1,3,7,14,30];
+let TEKRAR = oku('tekrar', {});
+function gunEkle(n){ const d=new Date(); d.setDate(d.getDate()+n); return bugun(d); }
+function tekrarIsle(id, bildi){
+  const kutu = (TEKRAR[id]||[0])[0];
+  const yeni = bildi ? Math.min(kutu+1, ARALIK.length-1) : 0;
+  TEKRAR[id] = [yeni, gunEkle(bildi ? ARALIK[yeni] : 1)];
+  kaydet('tekrar', TEKRAR);
+}
+function vadesiGelenler(){ const b=bugun(); return Object.keys(TEKRAR).filter(id=>TEKRAR[id][1]<=b && tumOgeler[id]).map(id=>tumOgeler[id]); }
+function tekrarSayfa(){
+  $('#icerik').innerHTML = `<button class="geri" data-git="">← Kategoriler</button>
+    <div class="baslik"><span class="ik">🔁</span><div><h2>Bugünkü tekrar</h2><div class="tr">Zamanı gelen cümleleri tekrar edin; bildikleriniz daha uzun aralıkla geri gelir.</div></div></div>
+    <div id="pratik"></div>`;
+  const l = vadesiGelenler();
+  if(!l.length){ $('#pratik').innerHTML='<p class="bos">🎉 Bugünlük tekrar bitti. Yarın yeniden bakın.</p>'; return; }
+  pratikBaslat(l, null, true);
+}
+
+// ---------- Pratik: söyle, dinle-seç, kelime testi ----------
+let P = null;
+const karistir = a=>{ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+function pratikBaslat(liste, kat, tekrarKipi){
+  // önce henüz "bildim" denmeyenler gelir
+  P = {liste:[...karistir(liste.filter(o=>!bildim.has(o.ses))), ...karistir(liste.filter(o=>bildim.has(o.ses)))],
+       i:0, acik:false, kat:kat||null, tekrar:!!tekrarKipi, mod:'soyle', dogru:0, toplam:0, secim:null, secenek:null};
+  pratikCiz();
+}
+function kipDegis(m){
+  const k = P.kat; if(!k) return;
+  P.mod = m; P.i = 0; P.acik = false; P.dogru = 0; P.toplam = 0; P.secim = null; P.secenek = null;
+  P.liste = karistir(m==='kelime' ? [...k.kelimeler] : katCumleleri(k));
+  pratikCiz();
+}
+function secenekleriKur(o, havuz, n){
+  const digerleri = karistir(havuz.filter(x=>x.tr!==o.tr)).slice(0, n-1);
+  return karistir([o, ...digerleri]);
+}
+function kipCubugu(){
+  if(!P.kat || P.tekrar) return '';
+  const b = (m,a)=>`<button class="${P.mod===m?'aktif':''}" data-mod="${m}" aria-pressed="${P.mod===m}">${a}</button>`;
+  return `<div class="sekmeler kipler">${b('soyle','🗣 Söyle')}${b('dinle','🎧 Dinle ve seç')}${b('kelime','📖 Kelime testi')}</div>`;
+}
+function pratikCiz(){
+  if(!P.liste.length){ $('#pratik').innerHTML = kipCubugu()+'<p class="bos">🎉 Bitti!</p>'; return; }
+  if(P.mod==='dinle' || P.mod==='kelime') return secmeliCiz();
+  const o = P.liste[P.i];
+  const bilinen = P.liste.filter(x=>bildim.has(x.ses)).length;
+  $('#pratik').innerHTML = kipCubugu() + `<div class="pratik">
+    <div class="sayac">${P.i+1} / ${P.liste.length} · ✓ ${bilinen} öğrenildi${P.tekrar?' · '+esc(o.kat.ikon+' '+o.kat.ad):''}</div>
+    <div class="soru">${esc(o.tr)}</div>
+    <div class="ipucu">Bunu ${DIL.ad} nasıl söylersiniz? Önce yüksek sesle söyleyin, sonra ipucu alın ya da cevabı açın.</div>
+    <div class="cevap">${P.acik?`<div class="en" lang="${DIL.kod}" dir="${DIL.yon||'ltr'}">${esc(o.en)}</div><div class="ok">🗣 ${esc(o.ok)}</div>`
+      : (P.ipucu?`<div class="en ipucu-metin" lang="${DIL.kod}" dir="${DIL.yon||'ltr'}">${esc(ipucuMetni(o.en, P.ipucu))}</div>`:'')}</div>
+    <div class="arac">
+      <button data-p="-1">← Önceki</button>
+      ${P.acik?`<button data-cal="${o.ses}">🔊 Dinle</button><button data-yavas="${o.ses}">🐢 Yavaş</button>`
+              :`${(P.ipucu||0)<2?`<button data-ipucu>💡 İpucu</button>`:''}<button class="btn-ana" data-goster>Cevabı göster</button>`}
+      <button data-p="1">Sonraki →</button>
+    </div>
+    ${TanimaSinifi?`<div class="mikrofon">${navigator.onLine?`<button data-mik>🎤 Söyle, kontrol edeyim</button>`:`<span class="tr">🎤 Mikrofonla kontrol için internet gerekir.</span>`}<div id="mikSonuc" aria-live="polite"></div><p class="tr" style="font-size:13px;margin:6px 0 0">Konuşma tanıma internet ister; sesiniz telefonunuzun tanıma hizmetine gönderilir.</p></div>`:''}
+    ${P.acik?`<div class="bildim-arac">
+      <button class="${bildim.has(o.ses)?'btn-ana':''}" data-bildim="1">✓ Bildim</button>
+      <button data-bildim="0">🔁 Tekrar çalışayım</button></div>`:''}
+    </div>`;
+}
+// kademeli ipucu: 1) kelimelerin ilk harfleri, 2) ilk yarısı açık
+function ipucuMetni(metin, seviye){
+  const k = metin.split(' ');
+  if(seviye===1) return k.map(w=>w.charAt(0)+'·'.repeat(Math.max(0,[...w].length-1))).join(' ');
+  const yari = Math.ceil(k.length/2);
+  return k.map((w,i)=> i<yari ? w : '_'.repeat(Math.min(6,[...w].length))).join(' ');
+}
+function secmeliCiz(){
+  const o = P.liste[P.i];
+  const havuz = P.mod==='kelime' ? P.kat.kelimeler : katCumleleri(P.kat);
+  if(!P.secenek) P.secenek = secenekleriKur(o, havuz, P.mod==='kelime'?4:3);
+  const cevaplandi = P.secim!==null;
+  $('#pratik').innerHTML = kipCubugu() + `<div class="pratik">
+    <div class="sayac">${P.i+1} / ${P.liste.length} · ✓ ${P.dogru} / ${P.toplam} doğru</div>
+    ${P.mod==='dinle'
+      ? `<div class="soru">🎧 Dinleyin: ne dendi?</div><div class="arac"><button class="btn-ana" data-cal="${o.ses}">🔊 Dinle</button><button data-yavas="${o.ses}">🐢 Yavaş</button></div>
+         ${cevaplandi?`<div class="en" lang="${DIL.kod}" dir="${DIL.yon||'ltr'}">${esc(o.en)}</div><div class="ok">🗣 ${esc(o.ok)}</div>`:''}`
+      : `<div class="soru"><span class="en" lang="${DIL.kod}" dir="${DIL.yon||'ltr'}">${esc(o.en)}</span></div><div class="ok">🗣 ${esc(o.ok)}</div>
+         <div class="arac"><button data-cal="${o.ses}">🔊 Dinle</button></div>`}
+    <div class="secenekler">${P.secenek.map((x,i)=>{
+      let c=''; if(cevaplandi){ if(x===o) c='dogru'; else if(i===P.secim) c='yanlis'; }
+      return `<button class="secenek ${c}" data-sec="${i}" ${cevaplandi?'disabled':''}>${esc(x.tr)}</button>`; }).join('')}</div>
+    <div id="secSonuc" aria-live="polite" class="tr">${cevaplandi?(P.secenek[P.secim]===o?'✅ Doğru!':'❌ Doğrusu yeşil olan.'):''}</div>
+    <div class="arac" style="justify-content:center"><button data-p="1">Sonraki →</button></div>
+  </div>`;
+  if(P.mod==='dinle' && !cevaplandi && !P.calindi){ P.calindi=true; cal(o); }
+}
+
+function favoriSayfa(){
+  const liste = [...favoriler].map(id=>tumOgeler[id]).filter(Boolean);
+  window.aktifListe = liste;
+  $('#icerik').innerHTML = `<button class="geri" data-git="">← Kategoriler</button>
+    <div class="baslik"><span class="ik">★</span><h2>Favorilerim</h2></div>
+    ${liste.length? dinleArac()+liste.map(satir).join('')
+      :'<p class="bos">Henüz favori yok. Bir cümlenin yanındaki ★ düğmesine basarak buraya ekleyebilirsiniz.</p>'}`;
+}
+function rehberSayfa(){
+  $('#icerik').innerHTML = `<button class="geri" data-git="">← Kategoriler</button>` + rehberHTML;
+}
+
+function aramaSayfa(q){
+  const gb=document.getElementById('geriBtn'); if(gb) gb.hidden=false;
+  const n = s=>normal(s).toLocaleLowerCase('tr').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const a = n(q);
+  const liste = Object.values(tumOgeler).filter(o=>n(o.en).includes(a)||n(o.tr).includes(a));
+  window.aktifListe = liste;
+  $('#icerik').innerHTML = `<button class="geri" data-git="">← Kategoriler</button>
+    <p class="giris">"${esc(q)}" için ${liste.length} sonuç</p>` +
+    (liste.length? liste.map(o=>`<div class="tr" style="font-size:13px;margin:10px 0 4px">${o.kat.ikon} ${esc(o.kat.ad)}</div>`+satir(o)).join('') : '<p class="bos">Sonuç bulunamadı.</p>');
+}
+
+// Adresler: #yol (cümleler), #yol-kelimeler, #yol-pratik, #favori, #rehber
+let icAdim = 0; // uygulama içinde açılan sayfa sayısı (geri tuşu için)
+function git(h){
+  durdurSira(); $('#ara').value=''; $('#ustAraclar').classList.remove('acik'); $('#menuBtn').setAttribute('aria-expanded', false);
+  if(location.hash.slice(1)===h) ciz(); else { icAdim++; location.hash = h; }
+  window.scrollTo(0,0);
+}
+function ciz(){
+  const h = decodeURIComponent(location.hash.slice(1));
+  const gb = document.getElementById('geriBtn'); if(gb) gb.hidden = !h && !$('#ara').value.trim();
+  if(!h) return anaSayfa();
+  if(h==='favori') return favoriSayfa();
+  if(h==='ilerleme') return ilerlemeSayfa();
+  if(h==='tekrar') return tekrarSayfa();
+  if(h==='rehber') return rehberSayfa();
+  if(h==='paylas') return paylasSayfa();
+  const m = h.match(/^([a-z]+)(?:-(kelimeler|pratik|diyalog|ogren))?$/);
+  if(!m) return anaSayfa();
+  katSayfa(m[1], m[2]||'cumleler');
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.id==='logo') return;
+  if(b.dataset.git!==undefined) return git(b.dataset.git);
+  if(b.dataset.cal) return cal(tumOgeler[b.dataset.cal]);
+  if(b.dataset.yavas) return cal(tumOgeler[b.dataset.yavas], true);
+  if(b.dataset.fav) return favDegis(b.dataset.fav, b);
+  if(b.dataset.hepsi!==undefined) return hepsiniCal(b);
+  if(b.dataset.p){ P.i=(P.i+(+b.dataset.p)+P.liste.length)%P.liste.length; P.acik=false; P.ipucu=0; P.secim=null; P.secenek=null; P.calindi=false; return pratikCiz(); }
+  if(b.dataset.goster!==undefined){ P.acik=true; istEkle('pratik', P.liste[P.i].kat.id); pratikCiz(); return cal(P.liste[P.i]); }
+  if(b.dataset.mik!==undefined) return dinleVeKontrolEt(P.liste[P.i]);
+  if(b.dataset.bildim){ const o=P.liste[P.i]; const bildi=b.dataset.bildim==='1'; bildimDegis(o.ses, bildi); tekrarIsle(o.ses, bildi);
+    if(P.tekrar){ P.liste.splice(P.i,1); if(!P.liste.length){ $('#pratik').innerHTML='<p class="bos">🎉 Bugünlük tekrar bitti. Yarın yeniden bakın.</p>'; return; } P.i%=P.liste.length; }
+    else P.i=(P.i+1)%P.liste.length;
+    P.acik=false; P.ipucu=0; return pratikCiz(); }
+  if(b.dataset.ipucu!==undefined){ P.ipucu=(P.ipucu||0)+1; return pratikCiz(); }
+  if(b.dataset.mod) return kipDegis(b.dataset.mod);
+  if(b.dataset.sec!==undefined && P && P.secim===null){ P.secim=+b.dataset.sec; P.toplam++; const o=P.liste[P.i];
+    if(P.secenek[P.secim]===o){ P.dogru++; bildimDegis(o.ses, true); tekrarIsle(o.ses, true); } else tekrarIsle(o.ses, false);
+    istEkle('pratik', P.kat? P.kat.id : null); return secmeliCiz(); }
+  if(b.dataset.dcal) return cal(diyalogOgeleri[b.dataset.dcal]);
+  if(b.dataset.diyalogOynat!==undefined) return diyalogOynat(b);
+});
+document.addEventListener('change', e=>{
+  if(e.target.id==='hizSec'){ hiz=+e.target.value; kaydet('hiz',hiz); }
+  if(e.target.id==='sesSec'){ sesTur=e.target.value; kaydet('sesTur',sesTur);
+    document.querySelectorAll('#sesSec').forEach(x=>x.value=sesTur); if(sesTur==='erkek') erkekIndir(); }
+  if(e.target.id==='rolSec'){ rol=e.target.value; kaydet('rol',rol); durdurSira(); ciz(); }
+});
+$('#logo').addEventListener('click', ()=>git(''));
+$('#logo').addEventListener('keydown', e=>{ if(e.key==='Enter') git(''); });
+$('#olcekBtn').addEventListener('click', ()=>{ olcek = OLCEKLER[(OLCEKLER.indexOf(olcek)+1) % OLCEKLER.length]; kaydet('olcek', olcek); olcekUygula(); });
+$('#menuBtn').addEventListener('click', ()=>{ const a=$('#ustAraclar').classList.toggle('acik'); $('#menuBtn').setAttribute('aria-expanded', a); if(a) $('#ara').focus(); });
+$('#geriBtn').addEventListener('click', ()=>{
+  if($('#ara').value.trim()){ $('#ara').value=''; return ciz(); }
+  if(icAdim>0){ icAdim--; history.back(); } else git('');
+});
+$('#favBtn').addEventListener('click', ()=>git('favori'));
+$('#ilerlemeBtn').addEventListener('click', ()=>git('ilerleme'));
+$('#rehberBtn').addEventListener('click', ()=>git('rehber'));
+$('#paylasBtn').addEventListener('click', ()=>git('paylas'));
+window.addEventListener('hashchange', ()=>{ if(!location.hash.slice(1)) icAdim=0; durdurSira();ciz();window.scrollTo(0,0);});
+// İnternetsiz kullanım (yalnızca uygulamanın kendi sitesinde çalışır)
+let swKayit = null;
+let kurulumOlayi = null;   // Android: tek dokunuşla yükleme
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); kurulumOlayi = e; });
+const yuklu = ()=> (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+// Aa: yazı boyutu (3 kademe, bu cihazda hatırlanır)
+const OLCEKLER = [1, 1.15, 1.3];
+let olcek = oku('olcek', 1);
+function olcekUygula(){ document.documentElement.style.setProperty('--olcek', olcek); }
+olcekUygula();
+function tarihYaz(t){ try{ return new Date(t+'T12:00:00').toLocaleDateString(document.documentElement.lang||'tr',{day:'numeric',month:'long',year:'numeric'}); }catch(e){ return t; } }
+async function guncelDenetle(){
+  const d = m=>{ const e=document.getElementById('guncelDurum'); if(e) e.textContent=m; };
+  if(!swKayit){ d('Bu özellik yalnızca internetteki sürümde çalışır.'); return; }
+  d('Denetleniyor…');
+  try{ await swKayit.update(); }catch(e){}
+  d(swKayit.installing || swKayit.waiting ? 'Yeni sürüm bulundu, yükleniyor…' : 'En güncel sürümü kullanıyorsunuz.');
+}
+// güncellemeden sonraki ilk açılışta "neler yeni" duyurusu
+function guncelDuyuru(){
+  if(!oku('guncellendi', null)) return;
+  kaydet('guncellendi', null);
+  const k = document.createElement('div'); k.className='sar'; k.id='duyuru';
+  k.innerHTML = `<div class="kutu duyuru"><h3>✅ Program güncellendi</h3>
+    ${(DIL.yenilikler||[]).length?`<p style="margin:0 0 6px">Bu sürümde yeni:</p><ul style="margin:0;padding-left:20px">${DIL.yenilikler.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
+    <p style="margin:12px 0 0"><button class="btn-ana" id="duyuruTamam">Tamam</button></p></div>`;
+  document.querySelector('main').before(k);
+  document.getElementById('duyuruTamam').addEventListener('click', ()=>k.remove());
+}
+let cevrimdisiHazir = null; // null: desteklenmiyor, false: hazırlanıyor, true: hazır
+function cevrimdisiMetin(){
+  if(cevrimdisiHazir===null) return '';
+  if(indirMetni) return indirMetni;
+  if(cevrimdisiHazir===true) return '✅ Bu cihazda internetsiz kullanıma hazır.';
+  return '⏳ Sesler bu cihaza kaydediliyor; birkaç saniye bekleyin.';
+}
+function cevrimdisiGoster(){ const e=document.getElementById('cevrimdisiDurum'); if(e) e.textContent=cevrimdisiMetin(); }
+if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost') &&document.querySelector('link[rel="manifest"]')){
+  cevrimdisiHazir = false;
+  // yeni sürüm yayınlanınca sayfayı bir kez kendiliğinden yenile
+  // Yeni sürüm gelince sayfa yenilenir; ses çalarken beklenir, sonra "güncellendi" duyurusu gösterilir.
+  const eskiDenetleyici = !!navigator.serviceWorker.controller; let yenilendi = false, bekleyenYenileme = false;
+  const yenile = ()=>{ if(yenilendi) return;
+    if(siraliOynat || !ses.paused){ bekleyenYenileme = true; return; }
+    yenilendi = true; kaydet('guncellendi', DIL.tarih || '1'); location.reload(); };
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{ if(eskiDenetleyici) yenile(); });
+  setInterval(()=>{ if(bekleyenYenileme) yenile(); }, 2000);
+  navigator.serviceWorker.register('sw.js').then(r=>{
+    swKayit = r;
+    // açıkken yarım saatte bir ve uygulama öne her geldiğinde yeni sürüm ara
+    setInterval(()=>r.update().catch(()=>{}), 30*60*1000);
+    document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') r.update().catch(()=>{}); });
+  }).catch(()=>{cevrimdisiHazir=null;cevrimdisiGoster();});
+  navigator.serviceWorker.ready.then(()=>{
+    // telefon yer darlığında bile kayıtları silmesin diye kalıcı depolama iste
+    try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+    const basla = ()=>setTimeout(sesHazirlikSirasi, 800);
+    if(navigator.serviceWorker.controller) basla(); else navigator.serviceWorker.addEventListener('controllerchange', basla, {once:true});
+  });
+}
+
+let zaman; $('#ara').addEventListener('input', e=>{ clearTimeout(zaman); const q=e.target.value.trim();
+  zaman=setTimeout(()=>{ q.length>=2 ? aramaSayfa(q) : ciz(); },200); });
+ciz();
+guncelDuyuru();
+</script>
+</body>
+</html>
