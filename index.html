@@ -186,7 +186,7 @@ main{padding-block:16px 40px}
 
 <script src="veri.js"></script>
 <script>
-const DIL = {"ad": "İspanyolca", "kod": "es-ES", "a": "Ali", "b": "Lucía", "site": "https://dilprogramlari.github.io/gunluk-ispanyolca/", "waMetni": "Günlük İspanyolca Konuşma: durum durum İspanyolca cümleler, diyaloglar ve dil kalıpları; Türkçe okunuşu, anlamı ve sesiyle. Ücretsiz, internetsiz de çalışır:", "tarih": "2026-11-18", "yon": "ltr", "sesOnbellek": "ispanyolca-ses", "onek": "ispanyolca", "yenilikler": ["🔁 Aralıklı tekrar: ana sayfada 'Bugün tekrar zamanı gelen cümleler' düğmesi; bildikleriniz daha uzun aralıkla geri gelir.", "🎧 Pratik'te yeni alıştırmalar: Dinle ve seç, Kelime testi; söylerken 💡 ipucu alabilirsiniz.", "🆕 Yeni konular: Konuşma Stratejileri ve Kendimi ve Ailemi Anlatıyorum. Her konuda seviye (A1/A2) ve hedef var.", "Aa düğmesiyle yazıyı büyütebilirsiniz; telefonda menü sadeleşti.", "✔️ Uzman incelemesiyle cümle ve okunuşlar düzeltildi.", "⚡ Güncellemelerde artık yalnızca değişen sesler iner; internetsiz kurulum kaldığı yerden devam eder."]};
+const DIL = {"ad": "İspanyolca", "kod": "es-ES", "a": "Ali", "b": "Lucía", "site": "https://dilprogramlari.github.io/gunluk-ispanyolca/", "waMetni": "Günlük İspanyolca Konuşma: durum durum İspanyolca cümleler, diyaloglar ve dil kalıpları; Türkçe okunuşu, anlamı ve sesiyle. Ücretsiz, internetsiz de çalışır:", "tarih": "2026-11-19", "yon": "ltr", "sesOnbellek": "ispanyolca-ses", "onek": "ispanyolca", "tasima": {}, "yenilikler": ["🔍 Bütün içerik yeniden denetlendi; birkaç cümle ve anlam düzeltildi. 'Bildim', favori ve tekrar kayıtlarınız korunarak yeni cümlelere taşındı.", "🔁 Aralıklı tekrar: ana sayfada 'Bugün tekrar zamanı gelen cümleler' düğmesi; bildikleriniz daha uzun aralıkla geri gelir.", "🎧 Pratik'te yeni alıştırmalar: Dinle ve seç, Kelime testi; söylerken 💡 ipucu alabilirsiniz.", "🆕 Yeni konular: Konuşma Stratejileri ve Kendimi ve Ailemi Anlatıyorum. Her konuda seviye (A1/A2) ve hedef var.", "Aa düğmesiyle yazıyı büyütebilirsiniz; telefonda menü sadeleşti.", "✔️ Uzman incelemesiyle cümle ve okunuşlar düzeltildi.", "⚡ Güncellemelerde artık yalnızca değişen sesler iner; internetsiz kurulum kaldığı yerden devam eder."]};
 const V = window.VERI || [];
 window.SES = window.SES || {};
 const $ = s => document.querySelector(s);
@@ -197,7 +197,9 @@ const oku = (k,d)=>{try{let r=localStorage.getItem(ONEK+k);
   // eski (öneksiz) kaydı bir kez taşı — yalnızca programın tek başına durduğu adreslerde
   if(r===null && !/github\.io$/.test(location.hostname)){ r=localStorage.getItem(k); if(r!==null) localStorage.setItem(ONEK+k,r); }
   const x=JSON.parse(r);return x==null?d:x}catch(e){return d}};
-let favoriler = new Set(oku('favoriler',[]));
+const TASI = DIL.tasima || {}; const tasi = id => TASI[id] || id;   // düzeltilen cümlelerin eski kayıtları yeni cümleye geçer
+const anahtarTasi = o => { const y={}; for(const [k,v] of Object.entries(o||{})) y[tasi(k)]=v; return y; };
+let favoriler = new Set(oku('favoriler',[]).map(tasi));
 let hiz = oku('hiz',1);
 const ses = new Audio();
 let siraliOynat = null;
@@ -278,7 +280,7 @@ const diyalogOgeleri = {};
 V.forEach(k=>{ if(k.diyalog) k.diyalog.satirlar.forEach((o,i)=>{ o.kat=k; o.no=i; diyalogOgeleri[k.id+'-'+i]=o; }); });
 
 // "Bildim" işaretleri (yalnızca bu cihazda saklanır)
-let bildim = new Set(oku('bildim',[]));
+let bildim = new Set(oku('bildim',[]).map(tasi));
 function bildimDegis(id, deger){ deger?bildim.add(id):bildim.delete(id); kaydet('bildim',[...bildim]); }
 const katCumleleri = k=>k.cumleler.filter(o=>o.en);
 const katBilinen = k=>katCumleleri(k).filter(o=>bildim.has(o.ses)).length;
@@ -442,7 +444,7 @@ function katSayfa(id, sekme){
 
 // ---------- İlerleme: yalnızca bu cihazda tutulur ----------
 const bugun = (d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-let IST = oku('ist', null) || {gun:{}, kat:{}, d:{}};
+let IST = oku('ist', null) || {gun:{}, kat:{}, d:{}}; IST.d = anahtarTasi(IST.d);
 function istEkle(alan, katId, miktar=1){
   const g = IST.gun[bugun()] || (IST.gun[bugun()] = {dinle:0,sure:0,pratik:0,mik:0,mikPuan:0,diyalog:0});
   g[alan] = (g[alan]||0) + miktar;
@@ -595,7 +597,7 @@ function dinleVeKontrolEt(o){
 // ---------- Aralıklı tekrar (Leitner kutuları) ----------
 // "Bildim" denen cümle 1, 3, 7, 14, 30 gün sonra yeniden sorulur; "Tekrar çalışayım" denen ertesi gün gelir.
 const ARALIK = [1,1,3,7,14,30];
-let TEKRAR = oku('tekrar', {});
+let TEKRAR = anahtarTasi(oku('tekrar', {}));
 function gunEkle(n){ const d=new Date(); d.setDate(d.getDate()+n); return bugun(d); }
 function tekrarIsle(id, bildi){
   const kutu = (TEKRAR[id]||[0])[0];
